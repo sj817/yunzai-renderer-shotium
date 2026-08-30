@@ -12,7 +12,41 @@ shotium 是裁掉 V8 的 Chromium 内核：只保留 Blink 布局、Skia 光栅�
 - Node.js 18 及以上
 - Windows、macOS、Linux 的 x64 或 arm64；引擎二进制随 `@shotkit/shotium` 的 optionalDependencies 自动安装，不需要本地编译
 
-## 安装
+## 快速配置
+
+在 Yunzai 根目录执行一条命令，脚本会完成克隆（已存在则更新）、安装依赖、把 `renderer.yaml` 切到 `shotium`：
+
+```powershell
+# Windows PowerShell
+irm https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.ps1 | iex
+```
+
+```bash
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.sh | bash
+```
+
+克隆之后脚本就在 `renderers/shotium` 里，可以带参数本地运行：
+
+| 参数 | `install.ps1` | `install.sh` | 作用 |
+| --- | --- | --- | --- |
+| 运行方式 | `-Mode daemon` | `--mode daemon` | 生成 `config.yaml` 并把引擎切到守护进程模式（`inprocess` 为进程内） |
+| 卸载 | `-Uninstall` | `--uninstall` | `renderer.yaml` 的 `name` 清空（回到 puppeteer），删除 `renderers/shotium` |
+| 指定根目录 | `-Root <dir>` | `--root <dir>` | 不在 Yunzai 根目录运行时使用 |
+
+```powershell
+.\renderers\shotium\install.ps1 -Mode daemon
+```
+
+```bash
+bash renderers/shotium/install.sh --mode daemon
+```
+
+远程执行时也可以传参：`curl -fsSL .../install.sh | bash -s -- --mode daemon`。
+
+依赖安装先尝试根目录 `pnpm install`；根目录安装失败（通常是 Yunzai 其他依赖拉不下来）时，改为只在 `renderers/shotium` 里安装渲染器自身的依赖。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
+
+## 手动安装
 
 在 Yunzai 根目录执行：
 
