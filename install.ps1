@@ -10,6 +10,8 @@
 
   还没克隆时可以直接远程执行（在 Yunzai 根目录）：
     irm https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.ps1 | iex
+  远程执行并传参：
+    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.ps1))) -Mode daemon
 
 .PARAMETER Root
   Yunzai 根目录。默认取当前目录；在 renderers/shotium 里运行时自动取上两级。
@@ -20,15 +22,17 @@
 .PARAMETER Uninstall
   卸载：renderer.yaml 的 name 清空（回到 puppeteer），删除 renderers/shotium。
 #>
-[CmdletBinding()]
 param(
   [string]$Root,
-  [ValidateSet('inprocess', 'daemon')]
   [string]$Mode,
   [switch]$Uninstall
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Mode -and $Mode -notin @('inprocess', 'daemon')) {
+  Write-Host "[shotium] -Mode 只能是 inprocess 或 daemon" -ForegroundColor Red
+  exit 1
+}
 $Repo = if ($env:SHOTIUM_RENDERER_REPO) { $env:SHOTIUM_RENDERER_REPO } else { 'https://github.com/sj817/yunzai-renderer-shotium' }
 
 function Info($msg) { Write-Host "[shotium] $msg" }

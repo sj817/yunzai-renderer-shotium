@@ -42,7 +42,15 @@ curl -fsSL https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/
 bash renderers/shotium/install.sh --mode daemon
 ```
 
-远程执行时也可以传参：`curl -fsSL .../install.sh | bash -s -- --mode daemon`。
+远程执行时也可以传参：
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.ps1))) -Mode daemon
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.sh | bash -s -- --mode daemon
+```
 
 依赖安装先尝试根目录 `pnpm install`；根目录安装失败（通常是 Yunzai 其他依赖拉不下来）时，改为只在 `renderers/shotium` 里安装渲染器自身的依赖。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
 
