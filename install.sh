@@ -101,23 +101,30 @@ else
 fi
 
 # ---- 安装依赖 ----------------------------------------------------------------
-installed=0
+# 装没装上只看 @shotkit/shotium 的实际路径，不看包管理器的退出码：
+# renderers/shotium 一般不在 Yunzai 的 pnpm workspace 里，根目录 pnpm install
+# 打印 "Already up to date" 并返回 0，也完全可能压根没碰渲染器的依赖。
+dep_installed() {
+  [ -d "$DIR/node_modules/@shotkit/shotium" ] || [ -d "$ROOT/node_modules/@shotkit/shotium" ]
+}
+
 if command -v pnpm >/dev/null 2>&1; then
   info "根目录 pnpm install ..."
-  if (cd "$ROOT" && pnpm install); then
-    installed=1
+  (cd "$ROOT" && pnpm install) || info "根目录 pnpm install 没跑成功（通常是别的依赖拉不下来），继续往下走"
+  if dep_installed; then
+    info "@shotkit/shotium 已就位，跳过单独安装"
   else
-    info "根目录安装失败（通常是别的依赖拉不下来），改为只安装渲染器自身的依赖 ..."
-    (cd "$DIR" && pnpm install --ignore-workspace) && installed=1
+    info "根目录安装没有装上 @shotkit/shotium，改为只安装渲染器自身的依赖 ..."
+    (cd "$DIR" && pnpm install --ignore-workspace) || info "pnpm install --ignore-workspace 没跑成功"
   fi
 elif command -v npm >/dev/null 2>&1; then
   info "未找到 pnpm，在 renderers/shotium 里用 npm install ..."
-  (cd "$DIR" && npm install --no-package-lock) && installed=1
+  (cd "$DIR" && npm install --no-package-lock) || info "npm install 没跑成功"
 else
   fail "未找到 pnpm 或 npm"
 fi
-[ "$installed" = 1 ] || fail "依赖安装失败"
-[ -d "$DIR/node_modules/@shotkit/shotium" ] || fail "@shotkit/shotium 没有装上，请检查上面的安装日志"
+
+dep_installed || fail "@shotkit/shotium 没有装上，请检查上面的安装日志（deprecated、peer dependency 之类的告警可以忽略，要找的是网络或权限错误）"
 
 # ---- 写配置 ------------------------------------------------------------------
 set_renderer_name shotium

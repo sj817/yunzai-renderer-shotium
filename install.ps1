@@ -29,6 +29,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# PowerShell 7.4+ 默认让原生命令的非零退出码跟着 $ErrorActionPreference 抛异常，
+# 那样 pnpm / git 一失败就直接中断，下面的 $LASTEXITCODE 判断和回退分支都走不到。
+$PSNativeCommandUseErrorActionPreference = $false
 if ($Mode -and $Mode -notin @('inprocess', 'daemon')) {
   Write-Host "[shotium] -Mode 只能是 inprocess 或 daemon" -ForegroundColor Red
   exit 1
@@ -101,27 +104,38 @@ if (Test-Path (Join-Path $Dir '.git')) {
 }
 
 # ---- 安装依赖 ----------------------------------------------------------------
-$pnpm = Get-Command pnpm -ErrorAction SilentlyContinue
-$installed = $false
-if ($pnpm) {
+# 与 install.sh 一致：装没装上只看 @shotkit/shotium 的实际路径，不看包管理器的退出码。
+# renderers/shotium 一般不在 Yunzai 的 pnpm workspace 里，根目录 pnpm install
+# 打印 "Already up to date" 并返回 0，也完全可能压根没碰渲染器的依赖。
+function Test-ShotiumDep {
+  (Test-Path (Join-Path $Dir 'node_modules\@shotkit\shotium')) -or
+  (Test-Path (Join-Path $Root 'node_modules\@shotkit\shotium'))
+}
+
+if (Get-Command pnpm -ErrorAction SilentlyContinue) {
   Info '根目录 pnpm install ...'
   Push-Location $Root
-  try { pnpm install; $installed = ($LASTEXITCODE -eq 0) } finally { Pop-Location }
-  if (-not $installed) {
-    Info '根目录安装失败（通常是别的依赖拉不下来），改为只安装渲染器自身的依赖 ...'
+  try { pnpm install } finally { Pop-Location }
+  if ($LASTEXITCODE -ne 0) { Info '根目录 pnpm install 没跑成功（通常是别的依赖拉不下来），继续往下走' }
+  if (Test-ShotiumDep) {
+    Info '@shotkit/shotium 已就位，跳过单独安装'
+  } else {
+    Info '根目录安装没有装上 @shotkit/shotium，改为只安装渲染器自身的依赖 ...'
     Push-Location $Dir
-    try { pnpm install --ignore-workspace; $installed = ($LASTEXITCODE -eq 0) } finally { Pop-Location }
+    try { pnpm install --ignore-workspace } finally { Pop-Location }
+    if ($LASTEXITCODE -ne 0) { Info 'pnpm install --ignore-workspace 没跑成功' }
   }
 } elseif (Get-Command npm -ErrorAction SilentlyContinue) {
   Info '未找到 pnpm，在 renderers/shotium 里用 npm install ...'
   Push-Location $Dir
-  try { npm install --no-package-lock; $installed = ($LASTEXITCODE -eq 0) } finally { Pop-Location }
+  try { npm install --no-package-lock } finally { Pop-Location }
+  if ($LASTEXITCODE -ne 0) { Info 'npm install 没跑成功' }
 } else {
   Fail '未找到 pnpm 或 npm'
 }
-if (-not $installed) { Fail '依赖安装失败' }
-if (-not (Test-Path (Join-Path $Dir 'node_modules\@shotkit\shotium'))) {
-  Fail '@shotkit/shotium 没有装上，请检查上面的安装日志'
+
+if (-not (Test-ShotiumDep)) {
+  Fail '@shotkit/shotium 没有装上，请检查上面的安装日志（deprecated、peer dependency 之类的告警可以忽略，要找的是网络或权限错误）'
 }
 
 # ---- 写配置 ------------------------------------------------------------------
