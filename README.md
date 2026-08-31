@@ -52,7 +52,7 @@ bash renderers/shotium/install.sh --mode daemon
 curl -fsSL https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.sh | bash -s -- --mode daemon
 ```
 
-依赖安装先尝试根目录 `pnpm install`；根目录安装失败（通常是 Yunzai 其他依赖拉不下来）时，改为只在 `renderers/shotium` 里安装渲染器自身的依赖。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
+依赖安装先跑根目录 `pnpm install`，跑完以 `renderers/shotium/node_modules/@shotkit/shotium` 是否存在为准，而不是看 pnpm 的退出码：探不到就在 `renderers/shotium` 里再跑一次 `pnpm install --ignore-workspace`，仍然探不到才报错。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
 
 ## 手动安装
 
@@ -63,7 +63,22 @@ git clone https://github.com/sj817/yunzai-renderer-shotium renderers/shotium
 pnpm install
 ```
 
-`pnpm-workspace.yaml` 已经包含 `renderers/**`，根目录 `pnpm install` 会一并安装 `@shotkit/shotium`。
+Miao-Yunzai 的 `pnpm-workspace.yaml` 包含 `renderers/**`，正常情况下根目录 `pnpm install` 会一并安装 `@shotkit/shotium`。但根目录安装返回成功不等于渲染器的依赖装上了——workspace 配置被改过，或者根目录安装被别的依赖卡住时，pnpm 可能只打印 `Already up to date` 就结束。装完确认一下：
+
+```bash
+ls renderers/shotium/node_modules/@shotkit/shotium
+```
+
+```powershell
+Test-Path renderers\shotium\node_modules\@shotkit\shotium
+```
+
+目录不存在就在渲染器目录里单独装一次：
+
+```bash
+cd renderers/shotium
+pnpm install --ignore-workspace
+```
 
 然后把 `config/config/renderer.yaml` 改为：
 
@@ -83,6 +98,8 @@ git pull
 cd ../..
 pnpm install
 ```
+
+`@shotkit/shotium` 的版本有变化时同样确认一次 `renderers/shotium/node_modules/@shotkit/shotium`，没更新到就在该目录下跑 `pnpm install --ignore-workspace`。跑 `bash renderers/shotium/install.sh`（或 `.\renderers\shotium\install.ps1`）会把这一套检查和回退都做掉。
 
 ## 配置
 
