@@ -114,7 +114,7 @@ pnpm install
 | `timeout` | `30000` | 页面加载超时（毫秒） |
 | `imgType` | `jpeg` | 默认图片类型，`jpeg` / `png` / `webp` |
 | `quality` | `90` | `jpeg` / `webp` 压缩质量 |
-| `multiPageHeight` | `4000` | 分片截图单张高度（CSS 像素） |
+| `multiPageHeight` | `4000` | 分片截图单张高度（CSS 像素），上限 32000 |
 | `releaseMemoryEvery` | `100` | 每渲染多少张把引擎可重建的内存还给系统，`0` 关闭 |
 | `cacheDir` | 空 | HTTP 磁盘缓存目录，用于模板引用的远程图片、字体；留空用引擎默认目录，填 `off` 关闭 |
 | `cacheMaxBytes` | `268435456` | 磁盘缓存上限（字节） |
@@ -137,12 +137,14 @@ pnpm install
 | `imgType` / `quality` | 原样传给引擎；`png` 不带 `quality` |
 | `omitBackground` | `png` / `webp` 生效；`jpeg` 没有 alpha 通道，忽略 |
 | `path` | 另存一份到指定路径，返回值仍是 Buffer |
-| `multiPage` / `multiPageHeight` | 先整张截容器量高度，超过一页时用 `clip` 按文档坐标逐片截取。分页数与 puppeteer 一样按 `round(高度 / 单页高度)` 计算，固定输出 `jpeg` |
+| `multiPage` / `multiPageHeight` | 交给引擎的分片接口 `screenshotTiles()`，一次布局切成若干横条。片数按 `ceil(高度 / 单页高度)` 计算，最后一片是余数，固定输出 `jpeg` |
 | `pageGotoParams.timeout` | 大于 `0` 时优先于配置中的 `timeout` |
 | `pageGotoParams.waitUntil` | 默认忽略，见「等待策略」 |
 | 每 100 张重启浏览器 | 换成每 `releaseMemoryEvery` 张调用一次引擎的 `releaseMemory()` |
 
-分片截图与 puppeteer 的差别：puppeteer 是改视窗高度、滚动、重截几次；这里每一片都来自同一次布局，分片之间不会出现样式对不上的情况。
+分片截图与 puppeteer 的差别：puppeteer 是改视窗高度、滚动、重截几次，一次 `multiPage` 要重新布局 N 遍；这里文档只加载、布局、光栅化一次，引擎在光栅化的过程中按行切开、逐片编码，同一时刻只存在一片的位图。每一片都来自同一次布局，分片之间不会出现样式对不上的情况。
+
+片数的算法与 puppeteer 不同：puppeteer 用 `round`，最后一片不足半页时会并进上一页（所以最后一页可能有 1.5 倍高）；这里用 `ceil`，`multiPageHeight` 是每一片的硬上限，最后一片是余数。
 
 ## 已知限制
 
