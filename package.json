@@ -16,6 +16,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@shotkit/shotium": "^0.4.0"
+    "@shotkit/shotium": "^0.7.2"
   }
 }
