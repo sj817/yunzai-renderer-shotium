@@ -1,6 +1,6 @@
 {
   "name": "yunzai-renderer-shotium",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Miao-Yunzai 的 shotium 渲染后端，替代 puppeteer",
   "author": "sj817",
@@ -16,6 +16,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@pixel.js/shotium": "^0.11.0"
+    "@pixel.js/shotium": "^0.11.1"
   }
 }
