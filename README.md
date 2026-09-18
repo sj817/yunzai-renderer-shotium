@@ -10,7 +10,7 @@ shotium 是裁掉 V8 的 Chromium 内核：只保留 Blink 布局、Skia 光栅�
 
 - Miao-Yunzai 3.1 及以上（带 `renderers/` 目录的版本）
 - Node.js 18 及以上
-- Windows、macOS、Linux 的 x64 或 arm64；引擎二进制随 `@shotkit/shotium` 的 optionalDependencies 自动安装，不需要本地编译
+- Windows、macOS、Linux 的 x64 或 arm64；引擎二进制随 `@pixel.js/shotium` 的 optionalDependencies 自动安装，不需要本地编译
 
 ## 快速配置
 
@@ -52,7 +52,7 @@ bash renderers/shotium/install.sh --mode daemon
 curl -fsSL https://raw.githubusercontent.com/sj817/yunzai-renderer-shotium/main/install.sh | bash -s -- --mode daemon
 ```
 
-依赖安装先跑根目录 `pnpm install`，跑完以 `renderers/shotium/node_modules/@shotkit/shotium` 是否存在为准，而不是看 pnpm 的退出码：探不到就在 `renderers/shotium` 里再跑一次 `pnpm install --ignore-workspace`，仍然探不到才报错。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
+依赖安装先跑根目录 `pnpm install`，跑完以 `renderers/shotium/node_modules/@pixel.js/shotium` 是否存在为准，而不是看 pnpm 的退出码：探不到就在 `renderers/shotium` 里再跑一次 `pnpm install --ignore-workspace`，仍然探不到才报错。没有 pnpm 时退回 npm。环境变量 `SHOTIUM_RENDERER_REPO` 可以替换仓库地址，用于镜像。
 
 ## 手动安装
 
@@ -63,14 +63,14 @@ git clone https://github.com/sj817/yunzai-renderer-shotium renderers/shotium
 pnpm install
 ```
 
-Miao-Yunzai 的 `pnpm-workspace.yaml` 包含 `renderers/**`，正常情况下根目录 `pnpm install` 会一并安装 `@shotkit/shotium`。但根目录安装返回成功不等于渲染器的依赖装上了——workspace 配置被改过，或者根目录安装被别的依赖卡住时，pnpm 可能只打印 `Already up to date` 就结束。装完确认一下：
+Miao-Yunzai 的 `pnpm-workspace.yaml` 包含 `renderers/**`，正常情况下根目录 `pnpm install` 会一并安装 `@pixel.js/shotium`。但根目录安装返回成功不等于渲染器的依赖装上了——workspace 配置被改过，或者根目录安装被别的依赖卡住时，pnpm 可能只打印 `Already up to date` 就结束。装完确认一下：
 
 ```bash
-ls renderers/shotium/node_modules/@shotkit/shotium
+ls renderers/shotium/node_modules/@pixel.js/shotium
 ```
 
 ```powershell
-Test-Path renderers\shotium\node_modules\@shotkit\shotium
+Test-Path renderers\shotium\node_modules\@pixel.js\shotium
 ```
 
 目录不存在就在渲染器目录里单独装一次：
@@ -99,7 +99,7 @@ cd ../..
 pnpm install
 ```
 
-`@shotkit/shotium` 的版本有变化时同样确认一次 `renderers/shotium/node_modules/@shotkit/shotium`，没更新到就在该目录下跑 `pnpm install --ignore-workspace`。跑 `bash renderers/shotium/install.sh`（或 `.\renderers\shotium\install.ps1`）会把这一套检查和回退都做掉。
+`@pixel.js/shotium` 的版本有变化时同样确认一次 `renderers/shotium/node_modules/@pixel.js/shotium`，没更新到就在该目录下跑 `pnpm install --ignore-workspace`。跑 `bash renderers/shotium/install.sh`（或 `.\renderers\shotium\install.ps1`）会把这一套检查和回退都做掉。
 
 ## 配置
 

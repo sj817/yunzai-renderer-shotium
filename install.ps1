@@ -104,12 +104,12 @@ if (Test-Path (Join-Path $Dir '.git')) {
 }
 
 # ---- 安装依赖 ----------------------------------------------------------------
-# 与 install.sh 一致：装没装上只看 @shotkit/shotium 的实际路径，不看包管理器的退出码。
+# 与 install.sh 一致：装没装上只看 @pixel.js/shotium 的实际路径，不看包管理器的退出码。
 # renderers/shotium 一般不在 Yunzai 的 pnpm workspace 里，根目录 pnpm install
 # 打印 "Already up to date" 并返回 0，也完全可能压根没碰渲染器的依赖。
 function Test-ShotiumDep {
-  (Test-Path (Join-Path $Dir 'node_modules\@shotkit\shotium')) -or
-  (Test-Path (Join-Path $Root 'node_modules\@shotkit\shotium'))
+  (Test-Path (Join-Path $Dir 'node_modules\@pixel.js\shotium')) -or
+  (Test-Path (Join-Path $Root 'node_modules\@pixel.js\shotium'))
 }
 
 if (Get-Command pnpm -ErrorAction SilentlyContinue) {
@@ -118,9 +118,9 @@ if (Get-Command pnpm -ErrorAction SilentlyContinue) {
   try { pnpm install } finally { Pop-Location }
   if ($LASTEXITCODE -ne 0) { Info '根目录 pnpm install 没跑成功（通常是别的依赖拉不下来），继续往下走' }
   if (Test-ShotiumDep) {
-    Info '@shotkit/shotium 已就位，跳过单独安装'
+    Info '@pixel.js/shotium 已就位，跳过单独安装'
   } else {
-    Info '根目录安装没有装上 @shotkit/shotium，改为只安装渲染器自身的依赖 ...'
+    Info '根目录安装没有装上 @pixel.js/shotium，改为只安装渲染器自身的依赖 ...'
     Push-Location $Dir
     try { pnpm install --ignore-workspace } finally { Pop-Location }
     if ($LASTEXITCODE -ne 0) { Info 'pnpm install --ignore-workspace 没跑成功' }
@@ -135,7 +135,7 @@ if (Get-Command pnpm -ErrorAction SilentlyContinue) {
 }
 
 if (-not (Test-ShotiumDep)) {
-  Fail '@shotkit/shotium 没有装上，请检查上面的安装日志（deprecated、peer dependency 之类的告警可以忽略，要找的是网络或权限错误）'
+  Fail '@pixel.js/shotium 没有装上，请检查上面的安装日志（deprecated、peer dependency 之类的告警可以忽略，要找的是网络或权限错误）'
 }
 
 # ---- 写配置 ------------------------------------------------------------------
